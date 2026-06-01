@@ -158,6 +158,104 @@
 
     .nav-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
+    .pdf-btn {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 3px;
+      padding: 5px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.12em;
+      color: #1C1832;
+      cursor: pointer;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: opacity var(--th), transform var(--th);
+    }
+
+    .pdf-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .pdf-btn:active { transform: translateY(0); }
+
+    /* Toast */
+    .pdf-toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 0.875rem 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.5625rem;
+      letter-spacing: 0.08em;
+      color: var(--text-2);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      white-space: nowrap;
+      box-shadow: 0 8px 32px var(--shadow);
+    }
+
+    .pdf-toast strong { color: var(--accent); }
+    .pdf-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* =========================================
+       PRINT / PDF STYLES
+    ========================================= */
+    @media print {
+      *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .nav, .pdf-btn, .pdf-toast { display: none !important; }
+
+      /* Force all content visible */
+      .r { opacity: 1 !important; transform: none !important; }
+      .mark-v, .mark-h { stroke-dashoffset: 0 !important; animation: none !important; }
+      .vd-fill { width: var(--print-w, 50%) !important; transition: none !important; }
+
+      section {
+        padding: 48px 6vw !important;
+        min-height: 0 !important;
+      }
+
+      /* Page breaks before each major section */
+      #color, #typography, #voice, #sub-brands,
+      #infrastructure, #applications, #principles {
+        break-before: page;
+      }
+
+      /* Keep cards from splitting mid-page */
+      .hl-card, .font-card, .stat-cell, .cap-item,
+      .principle-row, .sb-block, .sbo-card { break-inside: avoid; }
+
+      /* Grids that go too wide — collapse on print */
+      @page { margin: 14mm 12mm; size: A4; }
+
+      body { font-size: 11px; }
+
+      .section-h { font-size: 2rem !important; }
+
+      .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+      .stat-num  { font-size: 2rem !important; }
+
+      /* Sub-brand overview: 2 cols on print */
+      .sb-overview { grid-template-columns: repeat(2, 1fr) !important; }
+
+      /* App icons row: wrap cleanly */
+      .app-icons-row { flex-wrap: wrap; gap: 1rem; }
+
+      /* Membership card fixed width */
+      .mem-card { width: 320px !important; }
+
+      /* Footer */
+      .site-footer { border-top: 1px solid #ccc; }
+    }
+
     /* =========================================
        SECTION SCAFFOLDING
     ========================================= */
@@ -1697,10 +1795,17 @@
       <li><a href="#principles">Principles</a></li>
     </ul>
 
-    <button class="nav-toggle" id="modeToggle" aria-label="Toggle color mode">
-      <span id="modeLabel">LIGHT</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <button class="pdf-btn" id="pdfBtn" aria-label="Download as PDF">↓ PDF</button>
+      <button class="nav-toggle" id="modeToggle" aria-label="Toggle color mode">
+        <span id="modeLabel">LIGHT</span>
+      </button>
+    </div>
   </nav>
+
+  <div class="pdf-toast" id="pdfToast">
+    Print dialog open — select <strong>"Save as PDF"</strong> to download
+  </div>
 
   <!-- ===================== 01 · BRAND MARK ===================== -->
   <section id="brand-mark" aria-labelledby="hTitle">
@@ -2851,6 +2956,40 @@
 
     // Initial render
     renderBrand('cardi');
+
+    /* ---- PDF DOWNLOAD ---- */
+    document.getElementById('pdfBtn').addEventListener('click', () => {
+      // Ensure all content is visible before printing
+      document.querySelectorAll('.r').forEach(el => el.classList.add('vis'));
+
+      // Set counters to final values
+      document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+        const target = parseInt(el.dataset.target, 10);
+        const sfx = el.dataset.sfx || '';
+        el.textContent = (target >= 1000 ? target.toLocaleString() : target) + sfx;
+        el.dataset.done = '1';
+      });
+
+      // Set voice dims to their target widths via CSS var for print
+      document.querySelectorAll('.vd-fill[data-w]').forEach(fill => {
+        fill.style.setProperty('--print-w', fill.dataset.w);
+        fill.style.width = fill.dataset.w;
+      });
+
+      // Fix SVG mark animation for print
+      document.querySelectorAll('.mark-v, .mark-h').forEach(el => {
+        el.style.strokeDashoffset = '0';
+        el.style.animation = 'none';
+      });
+
+      // Show toast
+      const toast = document.getElementById('pdfToast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+
+      // Slight delay so toast renders before print dialog blocks
+      setTimeout(() => window.print(), 120);
+    });
 
     /* ---- RESET MARK ANIMATION on re-visit ---- */
     window.addEventListener('pageshow', () => {
