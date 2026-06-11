@@ -1435,7 +1435,7 @@ a:hover { text-decoration: underline; }
     </div>
 
     <!-- ── CARDI CARE ── -->
-    <div class="sb-panel active" id="panel-cardi" data-brand="cardi" role="tabpanel">
+    <div class="sb-panel active" id="panel-cardi" data-brand="cardi" role="tabpanel" aria-hidden="false">
       <div class="sb-panel-head r">
         <div>
           <div class="sb-mark"><span style="color:var(--cc-primary);">+</span> CARDI CARE · CARDI B WELLNESS LLC</div>
@@ -1580,7 +1580,7 @@ a:hover { text-decoration: underline; }
     </div>
 
     <!-- ── YEEZY HEALTH ── -->
-    <div class="sb-panel" id="panel-yeezy" data-brand="yeezy" role="tabpanel">
+    <div class="sb-panel" id="panel-yeezy" data-brand="yeezy" role="tabpanel" aria-hidden="true">
       <div class="sb-panel-head r">
         <div>
           <div class="sb-mark"><span style="color:var(--yh-earth);">+</span> YEEZY HEALTH · DEDICATED LLC</div>
@@ -1681,7 +1681,7 @@ a:hover { text-decoration: underline; }
     </div>
 
     <!-- ── KING WELLNESS ── -->
-    <div class="sb-panel" id="panel-king" data-brand="king" role="tabpanel">
+    <div class="sb-panel" id="panel-king" data-brand="king" role="tabpanel" aria-hidden="true">
       <div class="sb-panel-head r">
         <div>
           <div class="sb-mark"><span style="color:var(--kw-gold);">+</span> KING WELLNESS · DEDICATED LLC</div>
@@ -1782,7 +1782,7 @@ a:hover { text-decoration: underline; }
     </div>
 
     <!-- ── FENTY WELLNESS ── -->
-    <div class="sb-panel" id="panel-fenty" data-brand="fenty" role="tabpanel">
+    <div class="sb-panel" id="panel-fenty" data-brand="fenty" role="tabpanel" aria-hidden="true">
       <div class="sb-panel-head r">
         <div>
           <div class="sb-mark"><span style="color:var(--fw-nude);">+</span> FENTY WELLNESS · DEDICATED LLC</div>
@@ -2200,7 +2200,10 @@ function downloadPDF() {
         t.classList.remove('active');
         t.setAttribute('aria-selected', 'false');
       });
-      panels.forEach(function (p) { p.classList.remove('active'); });
+      panels.forEach(function (p) {
+        p.classList.remove('active');
+        p.setAttribute('aria-hidden', 'true');
+      });
 
       this.classList.add('active');
       this.setAttribute('aria-selected', 'true');
@@ -2208,6 +2211,7 @@ function downloadPDF() {
       var panel = document.getElementById('panel-' + brand);
       if (panel) {
         panel.classList.add('active');
+        panel.setAttribute('aria-hidden', 'false');
         // Reveal any elements that weren't visible while panel was hidden
         panel.querySelectorAll('.r:not(.visible)').forEach(function (el) {
           el.classList.add('visible');
